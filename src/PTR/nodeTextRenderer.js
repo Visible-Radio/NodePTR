@@ -49,18 +49,15 @@ function nodePixelTextRenderer({ columns, scale, text, defs, displayRows }) {
   encoder.setRepeat(0); // 0 for repeat, -1 for no-repeat
   encoder.setDelay(20); // frame delay in ms
   encoder.setQuality(5);
+  let frameSnapShotCounter = 0;
   state.config.snapshot = payload => {
-    // if we want to change frame durations, we'll have to do it here
-    // pass snapshot() the desired duration when it is called
-    // this could be attached to each char - or use a default param
-    // and frames that should linger longer will receive an override
-    // encoder.setDelay(20)
     if (payload?.last) {
       encoder.setDelay(500);
     }
     try {
       process.stdout.write('.');
       encoder.addFrame(ctx);
+      frameSnapShotCounter++;
     } catch (error) {
       console.log(error);
       process.exit(1);
@@ -72,11 +69,11 @@ function nodePixelTextRenderer({ columns, scale, text, defs, displayRows }) {
     state,
   });
   encoder.finish();
-  process.stdout.write('Done!');
+  process.stdout.write(`\nDone! Wrote ${frameSnapShotCounter} frames`);
 }
 
 const fromTheThing =
-  '<HL>Projection:\n if <HL>intruder <HL>organism reaches civilized areas ...Entire world population infected <HL>27,000 hours from first contact.';
+  '<HL>Projection:\n if <HL>intruder <HL>organism reaches civilized areas\n\n ...Entire world population infected <HL>27,000 hours from first contact.';
 
 nodePixelTextRenderer({
   columns: 10,

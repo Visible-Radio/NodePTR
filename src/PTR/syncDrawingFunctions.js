@@ -32,9 +32,15 @@ function syncDrawWords({ state }) {
 }
 
 function drawWord({ word, state }) {
-  state.newColor();
-  for (let c of word.chars) {
-    drawEachCharFrame({ charObj: c, state });
+  for (let charObj of word.chars) {
+    if (charObj.word().fullWordText === '\n') {
+      if (charObj.row === state.config.displayRows + state.rowsScrolled()) {
+        //
+        state.scroll({ charObj });
+      }
+    } else {
+      drawEachCharFrame({ charObj, state });
+    }
   }
 }
 
