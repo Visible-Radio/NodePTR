@@ -12,7 +12,6 @@ async function asyncDrawWords({ state }) {
 
 async function drawWord({ word, state }) {
   return new Promise(async resolve => {
-    state.newColor();
     for (let charObj of word.chars) {
       if (charObj.word().fullWordText === '\n') {
         if (charObj.row === state.config.displayRows + state.rowsScrolled()) {

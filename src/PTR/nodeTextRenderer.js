@@ -8,23 +8,35 @@ const { createCanvas } = require('canvas');
 const fs = require('fs');
 const defs = require('./customDefs_charWidth_7.json');
 
-function nodePixelTextRenderer({ columns, scale, text, defs, displayRows }) {
-  const args = process.argv.slice(2);
-  const fileName = args[0];
-  if (!fileName) {
-    console.log('You must provide a file name for the gif');
-    process.exit(1);
-  }
-  if (/[^A-Za-z0-9_-]/.test(fileName)) {
-    console.log(
-      'Permitted characters must follow format [A-Za-z0-9_-].\nDo not provide an extension.',
-    );
-    process.exit(1);
-  }
-  if (!fs.existsSync('PTR_output')) {
-    fs.mkdirSync('PTR_output');
-  }
+const args = process.argv.slice(2);
+const [fileName, ArgVText, columns, rows, scale] = args;
 
+if (!fileName) {
+  console.log('You must provide a file name for the gif');
+  process.exit(1);
+}
+if (/[^A-Za-z0-9_-]/.test(fileName)) {
+  console.log(
+    'Permitted characters must follow format [A-Za-z0-9_-].\nDo not provide an extension.',
+  );
+  process.exit(1);
+}
+if (!fs.existsSync('PTR_output')) {
+  fs.mkdirSync('PTR_output');
+}
+
+const fromTheThing =
+  '<HL>Projection:\n if <HL>intruder <HL>organism reaches civilized areas\n ...Entire world population infected <HL>27,000 hours from first contact.';
+
+nodePixelTextRenderer({
+  columns: Number(columns) || 10,
+  displayRows: Number(rows) || 5,
+  scale: Number(scale) || 3,
+  text: ArgVText ? ArgVText : 'hello world',
+  defs,
+});
+
+function nodePixelTextRenderer({ columns, scale, text, defs, displayRows }) {
   const modifiedDefs = modifyDefs(defs);
   const { charWidth } = modifiedDefs;
   const { words } = makeWords(text, columns, modifiedDefs);
@@ -52,7 +64,7 @@ function nodePixelTextRenderer({ columns, scale, text, defs, displayRows }) {
   let frameSnapShotCounter = 0;
   state.config.snapshot = payload => {
     if (payload?.last) {
-      encoder.setDelay(500);
+      encoder.setDelay(1000);
     }
     try {
       process.stdout.write('.');
@@ -71,14 +83,3 @@ function nodePixelTextRenderer({ columns, scale, text, defs, displayRows }) {
   encoder.finish();
   process.stdout.write(`\nDone! Wrote ${frameSnapShotCounter} frames`);
 }
-
-const fromTheThing =
-  '<HL>Projection:\n if <HL>intruder <HL>organism reaches civilized areas\n\n ...Entire world population infected <HL>27,000 hours from first contact.';
-
-nodePixelTextRenderer({
-  columns: 10,
-  displayRows: 5,
-  scale: 3,
-  text: fromTheThing,
-  defs,
-});

@@ -36,6 +36,7 @@ function drawWord({ word, state }) {
     if (charObj.word().fullWordText === '\n') {
       if (charObj.row === state.config.displayRows + state.rowsScrolled()) {
         //
+
         state.scroll({ charObj });
       }
     } else {
