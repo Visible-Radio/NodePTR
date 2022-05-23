@@ -49,6 +49,7 @@ function makeWords(text, columns, defs) {
             row: acc.row,
             col: acc.col,
             chars: makeChars({
+              incrementCharCount: acc.incrementCharCount.bind(acc),
               color,
               segment,
               segmentIndex,
@@ -84,18 +85,32 @@ function makeWords(text, columns, defs) {
     },
     {
       words: [],
+      row: 0,
+      col: 0,
+      charCount: 0,
       getRemaining() {
         return columns - this.col;
       },
-      row: 0,
-      col: 0,
+      incrementCharCount() {
+        this.charCount++;
+      },
     },
   );
 }
 
-function makeChars({ segment, segmentIndex, word, row, col, defs, color }) {
+function makeChars({
+  segment,
+  segmentIndex,
+  word,
+  row,
+  col,
+  defs,
+  color,
+  incrementCharCount,
+}) {
   return segment.split('').map((c, i) => {
     let frameNum = 0;
+    incrementCharCount();
     return {
       char: c,
       row,
@@ -301,6 +316,7 @@ function setupCanvas({
   gridSpaceX,
   gridSpaceY,
   displayRows,
+  charCount,
 }) {
   // set up the canvas
   if (canvas === null || canvas === undefined) {
@@ -334,6 +350,7 @@ function setupCanvas({
       borderThickness,
       borderSpace,
       borderStroke,
+      charCount,
     },
   };
 }
