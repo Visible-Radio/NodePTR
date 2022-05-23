@@ -110,7 +110,12 @@ function makeChars({
 }) {
   return segment.split('').map((c, i) => {
     let frameNum = 0;
-    incrementCharCount();
+    if (c !== '\n') {
+      // call incrementCharCount() conditionally
+      // tokens like '\n' appear here so they can trigger scrolling when encountered by the drawing functions
+      // but they themselves do not have any frames
+      incrementCharCount();
+    }
     return {
       char: c,
       row,
@@ -405,9 +410,31 @@ function modifyDefs(defs) {
   );
 }
 
+function calculateTotalFrames(state) {
+  const {
+    totalRows,
+    displayRows,
+    charWidth,
+    charCount: numberOfChars,
+  } = state.config;
+  const numberOfScrollEvents = totalRows - displayRows;
+  const numberOfScrollFrames = (charWidth + 2) * numberOfScrollEvents;
+  const numberOfCharFrames = charWidth * numberOfChars;
+  return {
+    totalRows,
+    displayRows,
+    numberOfScrollEvents,
+    numberOfScrollFrames,
+    numberOfCharFrames,
+    numberOfChars,
+    totalFrames: numberOfScrollFrames + numberOfCharFrames + 1,
+  };
+}
+
 module.exports = {
   drawBorder,
   modifyDefs,
+  calculateTotalFrames,
   makeCanvas,
   setupCanvas,
   makeStateAsync,

@@ -65,7 +65,9 @@ function nodePixelTextRenderer({ columns, scale, text, defs, displayRows }) {
   encoder.setQuality(5);
 
   let frameSnapShotCounter = 0;
-  const frameMetrics = calculateTotalFrames(state);
+  const frameMetrics = commonFunctions.calculateTotalFrames(state);
+  console.log('Frame Summary');
+  console.dir(frameMetrics, { depth: null });
 
   state.config.snapshot = payload => {
     if (payload?.last) {
@@ -89,25 +91,4 @@ function nodePixelTextRenderer({ columns, scale, text, defs, displayRows }) {
   });
   encoder.finish();
   process.stdout.write(`\nDone! Wrote ${frameSnapShotCounter} frames`);
-}
-
-function calculateTotalFrames(state) {
-  const {
-    totalRows,
-    displayRows,
-    charWidth,
-    charCount: numberOfChars,
-  } = state.config;
-  const numberOfScrollEvents = Math.ceil(totalRows / displayRows) - 1;
-  const numberOfScrollFrames = (charWidth + 2) * numberOfScrollEvents;
-  const numberOfCharFrames = charWidth * numberOfChars;
-  return {
-    totalRows,
-    displayRows,
-    numberOfScrollEvents,
-    numberOfScrollFrames,
-    numberOfCharFrames,
-    numberOfChars,
-    totalFrames: numberOfScrollFrames + numberOfCharFrames + 1,
-  };
 }
