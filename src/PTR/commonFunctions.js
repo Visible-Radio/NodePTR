@@ -417,7 +417,8 @@ function calculateTotalFrames(state) {
     charWidth,
     charCount: numberOfChars,
   } = state.config;
-  const numberOfScrollEvents = totalRows - displayRows;
+  const numberOfScrollEvents =
+    totalRows - displayRows > -1 ? totalRows - displayRows : 0;
   const numberOfScrollFrames = (charWidth + 2) * numberOfScrollEvents;
   const numberOfCharFrames = charWidth * numberOfChars;
   return {

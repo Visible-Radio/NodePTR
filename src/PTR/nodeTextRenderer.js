@@ -1,7 +1,13 @@
 const readline = require('readline');
 const commonFunctions = require('./commonFunctions.js');
-const { setupCanvas, makeWords, makeStateSync, modifyDefs, drawBorder } =
-  commonFunctions;
+const {
+  setupCanvas,
+  makeWords,
+  makeStateSync,
+  modifyDefs,
+  drawBorder,
+  calculateTotalFrames,
+} = commonFunctions;
 const syncDrawingFunctions = require('./syncDrawingFunctions.js');
 const { syncDrawWords } = syncDrawingFunctions;
 const GIFEncoder = require('gifencoder');
@@ -65,7 +71,7 @@ function nodePixelTextRenderer({ columns, scale, text, defs, displayRows }) {
   encoder.setQuality(5);
 
   let frameSnapShotCounter = 0;
-  const frameMetrics = commonFunctions.calculateTotalFrames(state);
+  const frameMetrics = calculateTotalFrames(state);
   console.log('Frame Summary');
   console.dir(frameMetrics, { depth: null });
 
