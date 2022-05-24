@@ -1,7 +1,7 @@
+const fs = require('fs');
 const readline = require('readline');
 const GIFEncoder = require('gifencoder');
 const { createCanvas } = require('canvas');
-const fs = require('fs');
 const defs = require('./customDefs_charWidth_7.json');
 const { syncDrawWords } = require('./syncDrawingFunctions.js');
 const {
@@ -36,9 +36,9 @@ const fromTheThing =
 run(
   nodePixelTextRenderer({
     text: ArgVText ? ArgVText : fromTheThing,
-    columns: Number(columns) || 10,
-    displayRows: Number(rows) || 5,
-    scale: Number(scale) || 3,
+    columns: Number(columns) || 20,
+    displayRows: Number(rows) || 2,
+    scale: Number(scale) || 5,
     defs,
   }),
   userFrameCapture,
