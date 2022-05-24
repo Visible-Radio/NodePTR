@@ -1,5 +1,9 @@
 const readline = require('readline');
-const commonFunctions = require('./commonFunctions.js');
+const GIFEncoder = require('gifencoder');
+const { createCanvas } = require('canvas');
+const fs = require('fs');
+const defs = require('./customDefs_charWidth_7.json');
+const { syncDrawWords } = require('./syncDrawingFunctions.js');
 const {
   setupCanvas,
   makeWords,
@@ -7,13 +11,7 @@ const {
   modifyDefs,
   drawBorder,
   calculateTotalFrames,
-} = commonFunctions;
-const syncDrawingFunctions = require('./syncDrawingFunctions.js');
-const { syncDrawWords } = syncDrawingFunctions;
-const GIFEncoder = require('gifencoder');
-const { createCanvas } = require('canvas');
-const fs = require('fs');
-const defs = require('./customDefs_charWidth_7.json');
+} = require('./commonFunctions.js');
 
 const args = process.argv.slice(2);
 const [fileName, ArgVText, columns, rows, scale] = args;
@@ -35,13 +33,69 @@ if (!fs.existsSync('PTR_output')) {
 const fromTheThing =
   '<HL>Projection:\n if <HL>intruder <HL>organism reaches civilized areas\n ...Entire world population infected <HL>27,000 hours from first contact.';
 
-nodePixelTextRenderer({
-  text: ArgVText ? ArgVText : 'hello world',
-  columns: Number(columns) || 10,
-  displayRows: Number(rows) || 5,
-  scale: Number(scale) || 3,
-  defs,
-});
+run(
+  nodePixelTextRenderer({
+    text: ArgVText ? ArgVText : fromTheThing,
+    columns: Number(columns) || 10,
+    displayRows: Number(rows) || 5,
+    scale: Number(scale) || 3,
+    defs,
+  }),
+  userFrameCapture,
+);
+
+function userFrameCapture(ctx, frameMetrics) {
+  console.log('Frame Summary');
+  console.dir(frameMetrics, { depth: null });
+  const encoder = userInitEncoder(ctx);
+  let frameSnapShotCounter = 0;
+  return [
+    (payload, ctx) => {
+      if (payload?.last) {
+        encoder.setDelay(1000);
+      }
+      try {
+        readline.cursorTo(process.stdout, 0);
+        process.stdout.write(
+          `Recording frame ${frameSnapShotCounter} of ${frameMetrics.totalFrames}`,
+        );
+        encoder.addFrame(ctx);
+        frameSnapShotCounter++;
+      } catch (error) {
+        console.log(error);
+        process.exit(1);
+      }
+    },
+    () => {
+      encoder.finish();
+      process.stdout.write(`\nDone! Wrote ${frameSnapShotCounter} frames`);
+    },
+  ];
+}
+
+function userInitEncoder(ctx) {
+  const encoder = new GIFEncoder(ctx.canvas.width, ctx.canvas.height);
+  encoder
+    .createReadStream()
+    .pipe(fs.createWriteStream(`PTR_output/${fileName}.gif`));
+  encoder.start();
+  encoder.setRepeat(0); // 0 for repeat, -1 for no-repeat
+  encoder.setDelay(20); // frame delay in ms
+  encoder.setQuality(5);
+  return encoder;
+}
+
+function run(state, initFn) {
+  const { ctx } = state;
+  const frameMetrics = calculateTotalFrames(state);
+  const [snapshotFn, onCompleteFn] = initFn(ctx, frameMetrics);
+  state.config.snapshot = payload => snapshotFn(payload, ctx);
+  drawBorder(state);
+  syncDrawWords({
+    state,
+  });
+  onCompleteFn();
+}
 
 function nodePixelTextRenderer({ columns, scale, text, defs, displayRows }) {
   const modifiedDefs = modifyDefs(defs);
@@ -60,41 +114,10 @@ function nodePixelTextRenderer({ columns, scale, text, defs, displayRows }) {
     charCount,
   });
   const state = makeStateSync({ ctx, words, config });
-
-  const encoder = new GIFEncoder(ctx.canvas.width, ctx.canvas.height);
-  encoder
-    .createReadStream()
-    .pipe(fs.createWriteStream(`PTR_output/${fileName}.gif`));
-  encoder.start();
-  encoder.setRepeat(0); // 0 for repeat, -1 for no-repeat
-  encoder.setDelay(20); // frame delay in ms
-  encoder.setQuality(5);
-
-  let frameSnapShotCounter = 0;
-  const frameMetrics = calculateTotalFrames(state);
-  console.log('Frame Summary');
-  console.dir(frameMetrics, { depth: null });
-
-  state.config.snapshot = payload => {
-    if (payload?.last) {
-      encoder.setDelay(1000);
-    }
-    try {
-      readline.cursorTo(process.stdout, 0);
-      process.stdout.write(
-        `Recording frame ${frameSnapShotCounter} of ${frameMetrics.totalFrames}`,
-      );
-      encoder.addFrame(ctx);
-      frameSnapShotCounter++;
-    } catch (error) {
-      console.log(error);
-      process.exit(1);
-    }
-  };
-  drawBorder(state);
-  syncDrawWords({
-    state,
-  });
-  encoder.finish();
-  process.stdout.write(`\nDone! Wrote ${frameSnapShotCounter} frames`);
+  return state;
 }
+
+module.exports = {
+  run,
+  nodePixelTextRenderer,
+};
