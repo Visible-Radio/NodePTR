@@ -30,14 +30,17 @@ if (!fs.existsSync('PTR_output')) {
   fs.mkdirSync('PTR_output');
 }
 
+const fromDoom =
+  "You have entered deeply into the <HL>infested <HL>starport, but something is <HL>wrong. The <HL>monsters have brought their own reality with them, and the starport's technology is being <HL>subverted by their presence";
+
 const fromTheThing =
-  '<HL>Projection:\n if <HL>intruder <HL>organism reaches civilized areas\n ...Entire world population infected <HL>27,000 hours from first contact.';
+  '<BL><HL>Projection\n if <HL>intruder <HL>organism reaches civilized areas\n <BL>...Entire world population infected <HL>27,000 hours from first contact.';
 
 run(
   nodePixelTextRenderer({
     text: ArgVText ? ArgVText : fromTheThing,
-    columns: Number(columns) || 20,
-    displayRows: Number(rows) || 2,
+    columns: Number(columns) || 10,
+    displayRows: Number(rows) || 5,
     scale: Number(scale) || 5,
     defs,
   }),
@@ -51,9 +54,7 @@ function userFrameCapture(ctx, frameMetrics) {
   let frameSnapShotCounter = 0;
   return [
     (payload, ctx) => {
-      if (payload?.last) {
-        encoder.setDelay(1000);
-      }
+      encoder.setDelay(payload?.last ? 1000 : payload?.frameDuration ?? 20);
       try {
         readline.cursorTo(process.stdout, 0);
         process.stdout.write(

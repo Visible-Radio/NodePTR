@@ -1,4 +1,5 @@
 const { drawScrollWords } = require('./asyncDrawingFunctions.js');
+const { getFlags } = require('./getFlags.js');
 const { drawScrollWordsSync } = require('./syncDrawingFunctions.js');
 
 function breakWord(word, columns, broken = []) {
@@ -16,7 +17,7 @@ function breakWord(word, columns, broken = []) {
 
 function parseWords(text, columns) {
   return text.split(/(\s|\n)/).reduce((acc, w) => {
-    const { flags, trimmed } = getFlags(w);
+    const [trimmed, flags] = getFlags(w);
     if (!trimmed.length) return acc;
     const totalSegments = Math.ceil(trimmed.length / columns);
     const segments =
@@ -25,17 +26,9 @@ function parseWords(text, columns) {
   }, []);
 }
 
-function getFlags(fullWordText) {
-  // just detect flags at the beginning of each word
-  const highlightFlag = /^<HL>/.test(fullWordText);
-  const trimmed = highlightFlag ? fullWordText.slice(4) : fullWordText;
-  return { flags: { highlightFlag }, trimmed };
-}
-
 function makeWords(text, columns, defs) {
   // break the string into words, none of which are longer than the number of columns
   const parsedWords = parseWords(text.toUpperCase(), columns);
-  let color = 'rgb(0,190,187)';
 
   // assign each word a row and column value
   return parsedWords.reduce(
@@ -50,7 +43,6 @@ function makeWords(text, columns, defs) {
             col: acc.col,
             chars: makeChars({
               incrementCharCount: acc.incrementCharCount.bind(acc),
-              color,
               segment,
               segmentIndex,
               word,
@@ -105,7 +97,7 @@ function makeChars({
   row,
   col,
   defs,
-  color,
+
   incrementCharCount,
 }) {
   return segment.split('').map((c, i) => {
@@ -124,7 +116,7 @@ function makeChars({
       charWidth: defs.charWidth,
       flags: word.flags,
       segmentIndex,
-      color,
+
       index() {
         // provide a the index to the segment on the associated word
         return segmentIndex();
@@ -244,19 +236,27 @@ function getFrameState(frameNum, charObj) {
 }
 
 function makeStateAsync({ words, ctx, config }) {
-  let color = 'rgb(200,0,120)';
+  let borderColor = [200, 0, 120];
+  let color = [0, 190, 187];
   let rowsScrolled = 0;
+  function rgbToString(rgbArr) {
+    const [r, g, b] = rgbArr;
+    return `rgb(${r},${g},${b})`;
+  }
+
   const state = {
     ctx,
     words,
     config,
     color,
     getColor() {
-      return color;
+      return rgbToString(color);
+    },
+    getBorderColor() {
+      return rgbToString(borderColor);
     },
     newColor() {
-      color = generateRandomColors();
-      return color;
+      return generateRandomColors();
     },
     rowsScrolled() {
       return rowsScrolled;
@@ -272,19 +272,39 @@ function makeStateAsync({ words, ctx, config }) {
   return state;
 }
 function makeStateSync({ words, ctx, config }) {
-  let color = 'rgb(200,0,120)';
+  let borderColor = [200, 0, 120];
+  let color = [0, 190, 187];
   let rowsScrolled = 0;
+  function rgbToString(rgbArr) {
+    const [r, g, b] = rgbArr;
+    return `rgb(${r},${g},${b})`;
+  }
+
   const state = {
     ctx,
     words,
     config,
     color,
     getColor() {
-      return color;
+      return rgbToString(color);
+    },
+    getBorderColor() {
+      return rgbToString(borderColor);
+    },
+    setColor(rgbArr) {
+      color = rgbArr;
+      return rgbToString(color);
+    },
+    dimColor() {
+      color = color.map(channel => channel / 2);
+      return rgbToString(color);
+    },
+    brightenColor(factor = 2) {
+      color = color.map(channel => channel * factor);
+      return rgbToString(color);
     },
     newColor() {
-      color = generateRandomColors();
-      return color;
+      return generateRandomColors();
     },
     rowsScrolled() {
       return rowsScrolled;
@@ -371,7 +391,7 @@ function makeCanvas() {
 function drawBorder(state) {
   const { ctx } = state;
   const borderStroke = state.config.borderStroke;
-  ctx.strokeStyle = state.color;
+  ctx.strokeStyle = state.getBorderColor();
 
   ctx.moveTo(borderStroke / 2, borderStroke / 2);
   ctx.lineTo(ctx.canvas.width - borderStroke / 2, borderStroke / 2);
@@ -444,4 +464,5 @@ module.exports = {
   makeChars,
   gridPositionFromIndex,
   applyScrollTransformToDef,
+  applyHighlightTransform,
 };

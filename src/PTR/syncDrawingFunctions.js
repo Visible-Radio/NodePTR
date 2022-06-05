@@ -27,8 +27,41 @@ function syncDrawWords({ state }) {
   const { words } = state;
   for (let word of words) {
     drawWord({ word, state });
+    if (word.word.flags.blinkFlag) {
+      drawBlinkWord({ word, state });
+    }
   }
   state.config.snapshot({ last: true });
+}
+
+function drawBlinkWord({ word, state, times = 6 }) {
+  // clear, then draw the word several times
+  let blinkCounter = 0;
+  while (blinkCounter < times) {
+    state.dimColor();
+    word.chars.forEach(char =>
+      drawFrameSync({ charPoints: char.frameState(), charObj: char, state }),
+    );
+    state.config.snapshot({ frameDuration: 30 });
+
+    word.chars.forEach(char =>
+      clearFrame({ charPoints: char.frameState(), charObj: char, state }),
+    );
+    state.config.snapshot({ frameDuration: 200 });
+
+    state.brightenColor(4);
+    word.chars.forEach(char =>
+      drawFrameSync({ charPoints: char.frameState(), charObj: char, state }),
+    );
+    state.config.snapshot({ frameDuration: 30 });
+
+    state.dimColor();
+    word.chars.forEach(char =>
+      drawFrameSync({ charPoints: char.frameState(), charObj: char, state }),
+    );
+    state.config.snapshot({ frameDuration: 200 });
+    blinkCounter++;
+  }
 }
 
 function drawWord({ word, state }) {
@@ -36,7 +69,6 @@ function drawWord({ word, state }) {
     if (charObj.word().fullWordText === '\n') {
       if (charObj.row === state.config.displayRows + state.rowsScrolled()) {
         //
-
         state.scroll({ charObj });
       }
     } else {
@@ -90,7 +122,7 @@ function drawFrameSync({ charPoints, charObj, state }) {
     const pxSizeX = scale;
     const pxSizeY = scale;
 
-    ctx.fillStyle = charObj.color;
+    ctx.fillStyle = state.getColor();
     ctx.fillRect(pxX, pxY, pxSizeX, pxSizeY);
   });
 }
