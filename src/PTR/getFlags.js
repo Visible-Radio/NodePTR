@@ -20,8 +20,14 @@ const defaultFlags = {
 };
 const checkBlinkFlag = makeCheckFlag(/^<BL>/, 'blinkFlag');
 const checkHighlightFlag = makeCheckFlag(/^<HL>/, 'highlightFlag');
+const checkWipeScreenFlag = makeCheckFlag(/^<WS>/, 'wipeScreenFlag');
 const checkAll = (...args) =>
-  compose(getAllFlags, checkHighlightFlag, checkBlinkFlag)(...args);
+  compose(
+    getAllFlags,
+    checkWipeScreenFlag,
+    checkHighlightFlag,
+    checkBlinkFlag,
+  )(...args);
 
 function getFlags(fullWordText) {
   return getAllFlags([fullWordText, defaultFlags]);

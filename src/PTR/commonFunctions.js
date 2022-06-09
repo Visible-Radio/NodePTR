@@ -465,4 +465,5 @@ module.exports = {
   gridPositionFromIndex,
   applyScrollTransformToDef,
   applyHighlightTransform,
+  getFrameState,
 };

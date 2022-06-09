@@ -29,9 +29,76 @@ function syncDrawWords({ state }) {
     drawWord({ word, state });
     if (word.word.flags.blinkFlag) {
       drawBlinkWord({ word, state });
+    } else if (word.word.flags.wipeScreenFlag) {
+      drawWipeScreen({ word, state });
     }
   }
   state.config.snapshot({ last: true });
+}
+
+function getOnScreenWords({ word, state }) {
+  const lastChar = word.chars.slice(-1)[0];
+  const screenRowIndex =
+    state.config.displayRows + state.rowsScrolled() - lastChar.row;
+  const firstOnScreenRowIndex =
+    lastChar.row - (state.config.displayRows - screenRowIndex);
+  const { onScreenWords } = state.words.reduce(
+    (acc, w) => {
+      if (w.row >= firstOnScreenRowIndex && !acc.done) {
+        return {
+          ...acc,
+          onScreenWords: [...acc.onScreenWords, w],
+          done: w.word === lastChar.word(),
+        };
+      }
+      return acc;
+    },
+    { onScreenWords: [], done: false },
+  );
+  return onScreenWords;
+}
+
+function getOnScreenChars({ word, state }) {
+  return getOnScreenWords({ word, state }).reduce((acc, w) => {
+    return [...acc, ...w.chars];
+  }, []);
+}
+
+function charsToDisplayLayoutTxFn({ charPoints, charObj, state }) {
+  //  recall charPoints is an array of {col: num, row: num}
+  //  where each item describes a single point inside the char's own square
+  //  These are NOT individual points on the canvas
+  // additional calculations are done to determine this, considering among other things
+  //  the char's own row/column
+  // That's what this meat does:
+  // const {
+  //   rowsScrolled,
+  //   config: { scale, charWidth, gridSpaceX, gridSpaceY, borderThickness },
+  // } = state;
+  // charPoints.forEach(({ row: charPointY, col: charPointX }) => {
+  //   const rowGap = (charObj.row - rowsScrolled()) * gridSpaceY;
+  //   const colGap = charObj.col * gridSpaceX;
+  //   const pxY =
+  //     (charObj.row - rowsScrolled()) * scale * charWidth +
+  //     charPointY * scale +
+  //     rowGap +
+  //     borderThickness;
+  //   if ([0, scale].includes(pxY)) return;
+  //   const pxX =
+  //     charObj.col * scale * charWidth +
+  //     charPointX * scale +
+  //     colGap +
+  //     borderThickness;
+  //   const pxSizeX = scale;
+  //   const pxSizeY = scale;
+  // });
+}
+
+function drawWipeScreen({ word, state }) {
+  const onScreenChars = getOnScreenChars({ word, state });
+  console.log(onScreenChars);
+
+  console.log(onScreenChars.map(charObj => charObj.frameState()));
 }
 
 function drawBlinkWord({ word, state, times = 6 }) {
@@ -99,6 +166,7 @@ function drawEachCharFrame({ charObj, state }) {
   charObj.setFrameNum(config.charWidth - 1);
 }
 
+//
 function drawFrameSync({ charPoints, charObj, state }) {
   const {
     ctx,

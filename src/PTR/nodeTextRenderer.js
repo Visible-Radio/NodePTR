@@ -38,10 +38,10 @@ const fromTheThing =
 
 run(
   nodePixelTextRenderer({
-    text: ArgVText ? ArgVText : fromTheThing,
+    text: ArgVText ? ArgVText : 'hello world my name is <WS>patrick kaipainen',
     columns: Number(columns) || 10,
-    displayRows: Number(rows) || 5,
-    scale: Number(scale) || 5,
+    displayRows: Number(rows) || 2,
+    scale: Number(scale) || 1,
     defs,
   }),
   userFrameCapture,
