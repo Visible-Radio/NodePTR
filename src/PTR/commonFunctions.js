@@ -223,11 +223,11 @@ function getFrameState(frameNum, charObj) {
 
     if (lastFrame) {
       if (newPoint.row < charWidth + 1 && newPoint.row > -2) {
-        acc.push(newPoint);
+        return [...acc, newPoint];
       }
     }
     if (newPoint.row < charWidth && newPoint.row > -2) {
-      acc.push(newPoint);
+      return [...acc, newPoint];
     }
 
     return acc;
@@ -354,9 +354,10 @@ function setupCanvas({
   const borderThickness = scale * 3;
   const borderSpace = borderThickness * 2;
   const borderStroke = scale;
+  const displayWidth = columns * scale * charWidth;
+  const displayHeight = displayRows * scale * charWidth;
 
-  ctx.canvas.width =
-    columns * scale * charWidth + (columns - 1) * gridSpaceX + borderSpace;
+  ctx.canvas.width = displayWidth + (columns - 1) * gridSpaceX + borderSpace;
   ctx.canvas.height =
     displayRows * scale * charWidth +
     (displayRows - 1) * gridSpaceY +
@@ -368,6 +369,8 @@ function setupCanvas({
       totalRows,
       columns,
       displayRows,
+      displayWidth,
+      displayHeight,
       scale,
       charWidth,
       gridSpaceX,

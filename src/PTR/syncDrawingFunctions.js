@@ -64,41 +64,115 @@ function getOnScreenChars({ word, state }) {
   }, []);
 }
 
-function charsToDisplayLayoutTxFn({ charPoints, charObj, state }) {
-  //  recall charPoints is an array of {col: num, row: num}
-  //  where each item describes a single point inside the char's own square
-  //  These are NOT individual points on the canvas
-  // additional calculations are done to determine this, considering among other things
-  //  the char's own row/column
-  // That's what this meat does:
-  // const {
-  //   rowsScrolled,
-  //   config: { scale, charWidth, gridSpaceX, gridSpaceY, borderThickness },
-  // } = state;
-  // charPoints.forEach(({ row: charPointY, col: charPointX }) => {
-  //   const rowGap = (charObj.row - rowsScrolled()) * gridSpaceY;
-  //   const colGap = charObj.col * gridSpaceX;
-  //   const pxY =
-  //     (charObj.row - rowsScrolled()) * scale * charWidth +
-  //     charPointY * scale +
-  //     rowGap +
-  //     borderThickness;
-  //   if ([0, scale].includes(pxY)) return;
-  //   const pxX =
-  //     charObj.col * scale * charWidth +
-  //     charPointX * scale +
-  //     colGap +
-  //     borderThickness;
-  //   const pxSizeX = scale;
-  //   const pxSizeY = scale;
-  // });
+function getCharAbsoluteScreenLayout({ charObj, state }) {
+  const {
+    rowsScrolled,
+    config: { scale, charWidth, gridSpaceX, gridSpaceY, borderThickness },
+  } = state;
+  return charObj
+    .frameState()
+    .reduce((acc, { row: charPointY, col: charPointX }) => {
+      const pxY =
+        (charObj.row - rowsScrolled()) * scale * charWidth + charPointY * scale;
+      const pxX = charObj.col * scale * charWidth + charPointX * scale;
+
+      if ([0, scale].includes(pxY)) return acc;
+
+      const pxSizeX = scale;
+      const pxSizeY = scale;
+      return [...acc, { pxX, pxY, pxSizeX, pxSizeY }];
+    }, []);
+}
+
+function absoluteLayoutWidthTxFn({ pts, targetWidth, state }) {
+  // take an array of points ready to be drawn to the canvas
+  // map them to a grid of the desired with
+  return pts.reduce((acc, pt) => {
+    const transformed = ptWidthTxFn({ pt, targetWidth, state });
+    if (
+      transformed.pxX <= state.config.scale ||
+      transformed.pxY >= state.ctx.canvas.height - state.config.scale * 3
+    )
+      return acc;
+
+    return [...acc, transformed];
+  }, []);
+}
+
+function ptWidthTxFn({ pt, targetWidth, state }) {
+  const linearIndex = pt.pxX + pt.pxY * state.ctx.canvas.width;
+  const { col: pxX, row: pxY } = gridPositionFromIndex({
+    index: linearIndex,
+    columns: targetWidth,
+  });
+  return { ...pt, pxX, pxY };
+}
+
+function gridPositionFromIndex({ index, columns }) {
+  if (index >= 0) {
+    const row = Math.floor(index / columns);
+    const col = index % columns;
+    return {
+      col,
+      row,
+    };
+  }
+  if (index < 0) {
+    const row = Math.floor(index / columns);
+    const col =
+      index % columns === 0 ? index % columns : (index % columns) + columns;
+
+    return {
+      col,
+      row,
+    };
+  }
 }
 
 function drawWipeScreen({ word, state }) {
   const onScreenChars = getOnScreenChars({ word, state });
-  console.log(onScreenChars);
+  const absoluteScreenLayout = onScreenChars.reduce((acc, charObj) => {
+    return [...acc, ...getCharAbsoluteScreenLayout({ charObj, state })];
+  }, []);
 
-  console.log(onScreenChars.map(charObj => charObj.frameState()));
+  const targetWidth = state.ctx.canvas.width - state.config.scale;
+
+  const layouts = makeWipeScreenLayouts({
+    initLayout: absoluteScreenLayout,
+    state,
+  });
+  const {
+    ctx,
+    config: { borderStroke, borderThickness },
+  } = state;
+
+  layouts.forEach((layout, i) => {
+    ctx.clearRect(
+      borderStroke,
+      borderStroke,
+      ctx.canvas.width - borderThickness,
+      ctx.canvas.height - borderThickness,
+    );
+    layout.forEach(({ pxX, pxY, pxSizeX, pxSizeY }) => {
+      state.ctx.fillStyle = state.getColor();
+      state.ctx.fillRect(pxX, pxY, pxSizeX, pxSizeY);
+    });
+    state.config.snapshot({ frameDuration: 100 });
+  });
+}
+
+function makeWipeScreenLayouts({ initLayout, state }) {
+  let layouts = [];
+  for (let i = state.ctx.canvas.width; i > 0; i -= state.config.scale) {
+    layouts.push(
+      absoluteLayoutWidthTxFn({
+        pts: initLayout,
+        targetWidth: i,
+        state,
+      }),
+    );
+  }
+  return layouts;
 }
 
 function drawBlinkWord({ word, state, times = 6 }) {
