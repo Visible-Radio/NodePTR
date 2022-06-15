@@ -29,7 +29,8 @@ function syncDrawWords({ state }) {
     drawWord({ word, state });
     if (word.word.flags.blinkFlag) {
       drawBlinkWord({ word, state });
-    } else if (word.word.flags.wipeScreenFlag) {
+    }
+    if (word.word.flags.wipeScreenFlag) {
       drawWipeScreen({ word, state });
     }
   }
@@ -67,16 +68,23 @@ function getOnScreenChars({ word, state }) {
 function getCharAbsoluteScreenLayout({ charObj, state }) {
   const {
     rowsScrolled,
-    config: { scale, charWidth, gridSpaceX, gridSpaceY, borderThickness },
+    config: { scale, charWidth, borderThickness, gridSpaceX, gridSpaceY },
   } = state;
   return charObj
     .frameState()
     .reduce((acc, { row: charPointY, col: charPointX }) => {
+      const rowGap = (charObj.row - rowsScrolled()) * gridSpaceY;
+      const colGap = charObj.col * gridSpaceX;
+      const pxX =
+        charObj.col * scale * charWidth +
+        charPointX * scale +
+        colGap +
+        borderThickness;
       const pxY =
-        (charObj.row - rowsScrolled()) * scale * charWidth + charPointY * scale;
-      const pxX = charObj.col * scale * charWidth + charPointX * scale;
-
-      if ([0, scale].includes(pxY)) return acc;
+        (charObj.row - rowsScrolled()) * scale * charWidth +
+        charPointY * scale +
+        rowGap +
+        borderThickness;
 
       const pxSizeX = scale;
       const pxSizeY = scale;
@@ -91,7 +99,7 @@ function absoluteLayoutWidthTxFn({ pts, targetWidth, state }) {
     const transformed = ptWidthTxFn({ pt, targetWidth, state });
     if (
       transformed.pxX <= state.config.scale ||
-      transformed.pxY >= state.ctx.canvas.height - state.config.scale * 3
+      transformed.pxY >= state.ctx.canvas.height - state.config.borderThickness
     )
       return acc;
 
@@ -135,8 +143,6 @@ function drawWipeScreen({ word, state }) {
     return [...acc, ...getCharAbsoluteScreenLayout({ charObj, state })];
   }, []);
 
-  const targetWidth = state.ctx.canvas.width - state.config.scale;
-
   const layouts = makeWipeScreenLayouts({
     initLayout: absoluteScreenLayout,
     state,
@@ -145,6 +151,10 @@ function drawWipeScreen({ word, state }) {
     ctx,
     config: { borderStroke, borderThickness },
   } = state;
+
+  state.config.snapshot({
+    frameDuration: 500,
+  });
 
   layouts.forEach((layout, i) => {
     ctx.clearRect(
@@ -157,22 +167,51 @@ function drawWipeScreen({ word, state }) {
       state.ctx.fillStyle = state.getColor();
       state.ctx.fillRect(pxX, pxY, pxSizeX, pxSizeY);
     });
-    state.config.snapshot({ frameDuration: 100 });
+    state.config.snapshot({
+      frameDuration: 40,
+    });
   });
+  ctx.clearRect(
+    borderStroke,
+    borderStroke,
+    ctx.canvas.width - borderThickness,
+    ctx.canvas.height - borderThickness,
+  );
+  state.config.snapshot({
+    frameDuration: 1000,
+  });
+  //
+  const lastChar = word.chars.slice(-1)[0];
+  const screenRowIndex =
+    state.config.displayRows + state.rowsScrolled() - lastChar.row;
+  state.setRowsScrolled(
+    state.rowsScrolled() + state.config.displayRows - (screenRowIndex - 1),
+  ); // subtract from display rows the row that the flag occured on
 }
 
 function makeWipeScreenLayouts({ initLayout, state }) {
   let layouts = [];
   for (let i = state.ctx.canvas.width; i > 0; i -= state.config.scale) {
-    layouts.push(
-      absoluteLayoutWidthTxFn({
-        pts: initLayout,
-        targetWidth: i,
-        state,
-      }),
-    );
+    const layout = absoluteLayoutWidthTxFn({
+      pts: initLayout,
+      targetWidth: i,
+      state,
+    });
+    if (layout.length === 0) continue;
+    layouts.push(layout);
   }
-  return layouts;
+
+  // should add frame duration to each layout
+  return [
+    ...layouts.slice(0, 6),
+    ...repeatLayouts([layouts[0], layouts[1]], 10),
+    ...repeatLayouts(layouts.slice(0, 5), 10),
+  ];
+}
+
+function repeatLayouts(layouts, times, acc = []) {
+  if (times === 0) return acc;
+  return repeatLayouts(layouts, times - 1, [...acc, ...layouts]);
 }
 
 function drawBlinkWord({ word, state, times = 6 }) {

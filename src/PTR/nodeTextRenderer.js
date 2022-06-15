@@ -12,6 +12,12 @@ const {
   drawBorder,
   calculateTotalFrames,
 } = require('./commonFunctions.js');
+const {
+  defaultText,
+  defaultColumns,
+  defaultRows,
+  defaultScale,
+} = require('./constants');
 
 const args = process.argv.slice(2);
 const [fileName, ArgVText, columns, rows, scale] = args;
@@ -30,18 +36,12 @@ if (!fs.existsSync('PTR_output')) {
   fs.mkdirSync('PTR_output');
 }
 
-const fromDoom =
-  "You have entered deeply into the <HL>infested <HL>starport, but something is <HL>wrong. The <HL>monsters have brought their own reality with them, and the starport's technology is being <HL>subverted by their presence";
-
-const fromTheThing =
-  '<BL><HL>Projection\n if <HL>intruder <HL>organism reaches civilized areas\n <BL>...Entire world population infected <HL>27,000 hours from first contact.';
-
 run(
   nodePixelTextRenderer({
-    text: ArgVText ? ArgVText : 'hello world my name is <WS>patrick kaipainen',
-    columns: Number(columns) || 10,
-    displayRows: Number(rows) || 2,
-    scale: Number(scale) || 1,
+    text: ArgVText ? ArgVText : defaultText,
+    columns: Number(columns) || defaultColumns,
+    displayRows: Number(rows) || defaultRows,
+    scale: Number(scale) || defaultScale,
     defs,
   }),
   userFrameCapture,

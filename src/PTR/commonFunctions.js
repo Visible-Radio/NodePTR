@@ -309,6 +309,9 @@ function makeStateSync({ words, ctx, config }) {
     rowsScrolled() {
       return rowsScrolled;
     },
+    setRowsScrolled(val) {
+      rowsScrolled = val;
+    },
     scroll({ charObj }) {
       // grab all the words with rows < charObj.row
       // we'll need to re-draw these
