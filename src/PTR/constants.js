@@ -7,6 +7,9 @@ const fromTheThing =
 const fromTheThingGlitchy =
   '<BL><HL>Projection\n if <HL>intruder <HL>organism reaches civilized areas\n <BL>...Entire world population infected <HL>27,000 hours from first <WS>contact. Data Stream Broken';
 
+const fromNeuroMancer =
+  'the sky above the port was the color of television tuned to a <HL>dead <WS>channel \n \n \n <HL>Neuromancer';
+
 const defaultColumns = 10;
 
 const defaultRows = 5;
@@ -15,7 +18,7 @@ const defaultScale = 5;
 
 const WSTest = 'hello <WS>world error';
 
-const defaultText = fromTheThingGlitchy;
+const defaultText = fromNeuroMancer;
 
 module.exports = {
   defaultText,
