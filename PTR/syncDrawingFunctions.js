@@ -156,7 +156,7 @@ function drawWipeScreen({ word, state }) {
     frameDuration: 500,
   });
 
-  layouts.forEach((layout, i) => {
+  layouts.forEach(layout => {
     ctx.clearRect(
       borderStroke,
       borderStroke,

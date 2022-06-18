@@ -185,7 +185,7 @@ export function applyScrollTransformToDef({
   return newDef;
 }
 
-export function gridPositionFromIndex({ index, columns, char }) {
+export function gridPositionFromIndex({ index, columns }) {
   if (index >= 0) {
     const row = Math.floor(index / columns);
     const col = index % columns;
@@ -353,14 +353,6 @@ export function setupCanvas({
   };
 }
 
-export function makeCanvas() {
-  const root = document.getElementById('root');
-  const canvas = document.createElement('canvas');
-  canvas.style.margin = '3px';
-  root.appendChild(canvas);
-  return canvas;
-}
-
 export function drawBorder(state) {
   const { ctx } = state;
   const borderStroke = state.config.borderStroke;
@@ -389,7 +381,7 @@ export function modifyDefs(defs) {
         // since we have a border in which no square contains part of the character
         return [
           key,
-          value.map((pointIndex, i) => {
+          value.map(pointIndex => {
             // for each row in the new grid, add 1 to the point Indexes in that row
             return (pointIndex +=
               2 * Math.floor(pointIndex / defs.charWidth) +
