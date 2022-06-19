@@ -19,11 +19,9 @@ import {
   defaultScale,
 } from './constants.js';
 
-import { createRequire } from 'module';
-const require = createRequire(import.meta.url);
-const defs = require('./CHARDEFS/customDefs_charWidth_7.json');
-const { createCanvas } = canvasExport;
+import defs from './CHARDEFS/customDefs_charWidth_7.js';
 
+const { createCanvas } = canvasExport;
 const args = process.argv.slice(2);
 const [fileName, ArgVText, columns, rows, scale] = args;
 
