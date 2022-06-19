@@ -1,4 +1,6 @@
 const config = {
+  collectCoverage: true,
+  collectCoverageFrom: ['./PTR/**/*.js', '!**/__tests__/**'],
   coverageThreshold: {
     global: {
       branches: 80,
