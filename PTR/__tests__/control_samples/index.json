@@ -1,0 +1,11 @@
+{
+  "controlSamples": [
+    {
+      "controlFile": "hi.gif",
+      "args": {
+        "text": "hi",
+        "displayRows": 1
+      }
+    }
+  ]
+}

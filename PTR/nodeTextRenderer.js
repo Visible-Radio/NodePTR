@@ -22,38 +22,24 @@ import {
 import defs from './CHARDEFS/customDefs_charWidth_7.js';
 
 const { createCanvas } = canvasExport;
-const args = process.argv.slice(2);
-const [fileName, ArgVText, columns, rows, scale] = args;
 
-if (!fileName) {
-  console.log('You must provide a file name for the gif');
-  process.exit(1);
-}
-if (/[^A-Za-z0-9_-]/.test(fileName)) {
-  console.log(
-    'Permitted characters must follow format [A-Za-z0-9_-].\nDo not provide an extension.',
+export const nptr = (fileName, { text, columns, displayRows, scale }) =>
+  run(
+    fileName,
+    prepareModel({
+      text: text ?? defaultText,
+      columns: columns || defaultColumns,
+      displayRows: displayRows || defaultRows,
+      scale: scale || defaultScale,
+      defs,
+    }),
+    GIFEncoderFrameCapture,
   );
-  process.exit(1);
-}
-if (!fs.existsSync('PTR_output')) {
-  fs.mkdirSync('PTR_output');
-}
 
-run(
-  nodePixelTextRenderer({
-    text: ArgVText ? ArgVText : defaultText,
-    columns: Number(columns) || defaultColumns,
-    displayRows: Number(rows) || defaultRows,
-    scale: Number(scale) || defaultScale,
-    defs,
-  }),
-  userFrameCapture,
-);
-
-function userFrameCapture(ctx, frameMetrics) {
+export function GIFEncoderFrameCapture(ctx, frameMetrics, fileName) {
   console.log('Frame Summary');
   console.dir(frameMetrics, { depth: null });
-  const encoder = userInitEncoder(ctx);
+  const encoder = initGIFEncoder(ctx, fileName);
   let frameSnapShotCounter = 0;
   return [
     (payload, ctx) => {
@@ -66,6 +52,7 @@ function userFrameCapture(ctx, frameMetrics) {
         encoder.addFrame(ctx);
         frameSnapShotCounter++;
       } catch (error) {
+        console.log('hi mom');
         console.log(error);
         process.exit(1);
       }
@@ -77,11 +64,9 @@ function userFrameCapture(ctx, frameMetrics) {
   ];
 }
 
-function userInitEncoder(ctx) {
+export function initGIFEncoder(ctx, fileName) {
   const encoder = new GIFEncoder(ctx.canvas.width, ctx.canvas.height);
-  encoder
-    .createReadStream()
-    .pipe(fs.createWriteStream(`PTR_output/${fileName}.gif`));
+  encoder.createReadStream().pipe(fs.createWriteStream(`${fileName}.gif`));
   encoder.start();
   encoder.setRepeat(0); // 0 for repeat, -1 for no-repeat
   encoder.setDelay(20); // frame delay in ms
@@ -89,10 +74,10 @@ function userInitEncoder(ctx) {
   return encoder;
 }
 
-function run(state, initFn) {
+export function run(fileName, state, initFn) {
   const { ctx } = state;
   const frameMetrics = calculateTotalFrames(state);
-  const [snapshotFn, onCompleteFn] = initFn(ctx, frameMetrics);
+  const [snapshotFn, onCompleteFn] = initFn(ctx, frameMetrics, fileName);
   state.config.snapshot = payload => snapshotFn(payload, ctx);
   drawBorder(state);
   syncDrawWords({
@@ -101,7 +86,7 @@ function run(state, initFn) {
   onCompleteFn();
 }
 
-function nodePixelTextRenderer({ columns, scale, text, defs, displayRows }) {
+export function prepareModel({ columns, scale, text, defs, displayRows }) {
   const modifiedDefs = modifyDefs(defs);
   const { charWidth } = modifiedDefs;
   const { words, charCount } = makeWords(text, columns, modifiedDefs);
