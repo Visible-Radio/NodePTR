@@ -39,4 +39,6 @@ The flags can be combined together, must proceed the word to which they apply, a
 
 ## Example Output
 
-[My image](https://github.com/Visible-Radio/NodePTR/blob/30d7c7ccd7c984f973dc2b8d77af34d5d02af21f/PTR/PTR_output/neuromancer_pg_1.gif)
+![My image](https://github.com/Visible-Radio/NodePTR/blob/30d7c7ccd7c984f973dc2b8d77af34d5d02af21f/PTR/PTR_output/neuromancer_pg_1.gif)
+
+<!-- ![](PTR/PTR_output/neuromancer_pg_1.gif) -->
