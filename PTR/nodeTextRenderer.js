@@ -50,16 +50,17 @@ export function GIFEncoderFrameCapture(ctx, frameMetrics, fileName) {
           `Recording frame ${frameSnapShotCounter} of ${frameMetrics.totalFrames}`,
         );
         encoder.addFrame(ctx);
+
         frameSnapShotCounter++;
       } catch (error) {
-        console.log('hi mom');
         console.log(error);
         process.exit(1);
       }
     },
     () => {
+      const doneMessage = `\nDone! Wrote ${frameSnapShotCounter} frames`;
+      process.stdout.write(doneMessage);
       encoder.finish();
-      process.stdout.write(`\nDone! Wrote ${frameSnapShotCounter} frames`);
     },
   ];
 }
