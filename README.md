@@ -1,5 +1,7 @@
 # Node Pixel Text Renderer
 
+![The sky above the port was the color of television tuned to a dead channel](https://github.com/Visible-Radio/NodePTR/blob/30d7c7ccd7c984f973dc2b8d77af34d5d02af21f/PTR/PTR_output/neuromancer_pg_1.gif)
+
 ## Overview
 
 A Node.js utility for generating animated gifs, inspired from scrolling text used as context titles in film.
@@ -39,6 +41,4 @@ The flags can be combined together, must proceed the word to which they apply, a
 
 ## Example Output
 
-![My image](https://github.com/Visible-Radio/NodePTR/blob/30d7c7ccd7c984f973dc2b8d77af34d5d02af21f/PTR/PTR_output/neuromancer_pg_1.gif)
-
-<!-- ![](PTR/PTR_output/neuromancer_pg_1.gif) -->
+![<BL><HL>Projection\n if <HL>intruder <HL>organism reaches civilized areas\n <BL>...Entire world population infected <HL>27,000 hours from first <WS>contact. Data Stream Broken](https://github.com/Visible-Radio/NodePTR/blob/245168c4312791a29da8313d016e1490453276a2/PTR/PTR_output/the_thing_with_glitch.gif)
