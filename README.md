@@ -44,3 +44,7 @@ The flags can be combined together, must proceed the word to which they apply, a
 This text appears onscreen in the the movie 'The Thing'
 
 ![<BL><HL>Projection\n if <HL>intruder <HL>organism reaches civilized areas\n <BL>...Entire world population infected <HL>27,000 hours from first <WS>contact. Data Stream Broken](https://github.com/Visible-Radio/NodePTR/blob/245168c4312791a29da8313d016e1490453276a2/PTR/PTR_output/the_thing_with_glitch.gif)
+
+## Font
+
+Internally, NPTR consumes character definition json generated with the [Node Pixel Character Editor](https://visible-radio.github.io/react-pixel-character-editor/). It will write any char sets defined with that tool, but is currently hardcoded to a specific definition set.
