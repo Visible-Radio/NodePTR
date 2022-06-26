@@ -39,4 +39,4 @@ The flags can be combined together, must proceed the word to which they apply, a
 
 ## Example Output
 
-[My image](github.com/Visible-Radio/NodePTR/blob/refactor/nodeJS_only/src/PTR/PTR_output/neuromancer_pg_1.gif)
+[My image](github.com/Visible-Radio/NodePTR/PTR/PTR_output/neuromancer_pg_1.gif)
