@@ -1,56 +1,45 @@
-const fs = require('fs');
-const readline = require('readline');
-const GIFEncoder = require('gifencoder');
-const { createCanvas } = require('canvas');
-const defs = require('./customDefs_charWidth_7.json');
-const { syncDrawWords } = require('./syncDrawingFunctions.js');
-const {
+import fs from 'fs';
+import readline from 'readline';
+import GIFEncoder from 'gifencoder';
+import canvasExport from 'canvas';
+import { syncDrawWords } from './syncDrawingFunctions.js';
+import {
   setupCanvas,
   makeWords,
   makeStateSync,
   modifyDefs,
   drawBorder,
   calculateTotalFrames,
-} = require('./commonFunctions.js');
-const {
+} from './commonFunctions.js';
+
+import {
   defaultText,
   defaultColumns,
   defaultRows,
   defaultScale,
-} = require('./constants');
+} from './constants.js';
 
-const args = process.argv.slice(2);
-const [fileName, ArgVText, columns, rows, scale] = args;
+import defs from './CHARDEFS/customDefs_charWidth_7.js';
 
-if (!fileName) {
-  console.log('You must provide a file name for the gif');
-  process.exit(1);
-}
-if (/[^A-Za-z0-9_-]/.test(fileName)) {
-  console.log(
-    'Permitted characters must follow format [A-Za-z0-9_-].\nDo not provide an extension.',
+const { createCanvas } = canvasExport;
+
+export const nptr = (fileName, { text, columns, displayRows, scale }) =>
+  run(
+    fileName,
+    prepareModel({
+      text: text ?? defaultText,
+      columns: columns || defaultColumns,
+      displayRows: displayRows || defaultRows,
+      scale: scale || defaultScale,
+      defs,
+    }),
+    GIFEncoderFrameCapture,
   );
-  process.exit(1);
-}
-if (!fs.existsSync('PTR_output')) {
-  fs.mkdirSync('PTR_output');
-}
 
-run(
-  nodePixelTextRenderer({
-    text: ArgVText ? ArgVText : defaultText,
-    columns: Number(columns) || defaultColumns,
-    displayRows: Number(rows) || defaultRows,
-    scale: Number(scale) || defaultScale,
-    defs,
-  }),
-  userFrameCapture,
-);
-
-function userFrameCapture(ctx, frameMetrics) {
+export function GIFEncoderFrameCapture(ctx, frameMetrics, fileName) {
   console.log('Frame Summary');
   console.dir(frameMetrics, { depth: null });
-  const encoder = userInitEncoder(ctx);
+  const encoder = initGIFEncoder(ctx, fileName);
   let frameSnapShotCounter = 0;
   return [
     (payload, ctx) => {
@@ -61,6 +50,7 @@ function userFrameCapture(ctx, frameMetrics) {
           `Recording frame ${frameSnapShotCounter} of ${frameMetrics.totalFrames}`,
         );
         encoder.addFrame(ctx);
+
         frameSnapShotCounter++;
       } catch (error) {
         console.log(error);
@@ -68,17 +58,16 @@ function userFrameCapture(ctx, frameMetrics) {
       }
     },
     () => {
+      const doneMessage = `\nDone! Wrote ${frameSnapShotCounter} frames`;
+      process.stdout.write(doneMessage);
       encoder.finish();
-      process.stdout.write(`\nDone! Wrote ${frameSnapShotCounter} frames`);
     },
   ];
 }
 
-function userInitEncoder(ctx) {
+export function initGIFEncoder(ctx, fileName) {
   const encoder = new GIFEncoder(ctx.canvas.width, ctx.canvas.height);
-  encoder
-    .createReadStream()
-    .pipe(fs.createWriteStream(`PTR_output/${fileName}.gif`));
+  encoder.createReadStream().pipe(fs.createWriteStream(`${fileName}.gif`));
   encoder.start();
   encoder.setRepeat(0); // 0 for repeat, -1 for no-repeat
   encoder.setDelay(20); // frame delay in ms
@@ -86,10 +75,10 @@ function userInitEncoder(ctx) {
   return encoder;
 }
 
-function run(state, initFn) {
+export function run(fileName, state, initFn) {
   const { ctx } = state;
   const frameMetrics = calculateTotalFrames(state);
-  const [snapshotFn, onCompleteFn] = initFn(ctx, frameMetrics);
+  const [snapshotFn, onCompleteFn] = initFn(ctx, frameMetrics, fileName);
   state.config.snapshot = payload => snapshotFn(payload, ctx);
   drawBorder(state);
   syncDrawWords({
@@ -98,7 +87,7 @@ function run(state, initFn) {
   onCompleteFn();
 }
 
-function nodePixelTextRenderer({ columns, scale, text, defs, displayRows }) {
+export function prepareModel({ columns, scale, text, defs, displayRows }) {
   const modifiedDefs = modifyDefs(defs);
   const { charWidth } = modifiedDefs;
   const { words, charCount } = makeWords(text, columns, modifiedDefs);
@@ -117,8 +106,3 @@ function nodePixelTextRenderer({ columns, scale, text, defs, displayRows }) {
   const state = makeStateSync({ ctx, words, config });
   return state;
 }
-
-module.exports = {
-  run,
-  nodePixelTextRenderer,
-};

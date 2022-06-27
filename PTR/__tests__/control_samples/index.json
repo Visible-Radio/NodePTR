@@ -1,0 +1,33 @@
+{
+  "controlSamples": [
+    {
+      "controlFile": "hi.gif",
+      "args": {
+        "text": "hi",
+        "displayRows": 1
+      }
+    },
+    {
+      "controlFile": "helloWorld.gif",
+      "args": {
+        "text": "hello world",
+        "displayRows": 1,
+        "columns": 5
+      }
+    },
+    {
+      "controlFile": "fromTheThingGlitchy.gif",
+      "args": {
+        "text": "<BL><HL>Projection\n if <HL>intruder <HL>organism reaches civilized areas\n <BL>...Entire world population infected <HL>27,000 hours from first <WS>contact. Data Stream Broken"
+      }
+    },
+    {
+      "controlFile": "1x1.gif",
+      "args": {
+        "text": "abc",
+        "displayRows": 1,
+        "columns": 1
+      }
+    }
+  ]
+}

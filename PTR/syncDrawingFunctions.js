@@ -1,4 +1,4 @@
-function clearFrame({ charPoints, charObj, state }) {
+export function clearFrame({ charPoints, charObj, state }) {
   const {
     ctx,
     config: { scale, charWidth, gridSpaceX, gridSpaceY, borderThickness },
@@ -23,7 +23,7 @@ function clearFrame({ charPoints, charObj, state }) {
   });
 }
 
-function syncDrawWords({ state }) {
+export function syncDrawWords({ state }) {
   const { words } = state;
   for (let word of words) {
     drawWord({ word, state });
@@ -156,7 +156,7 @@ function drawWipeScreen({ word, state }) {
     frameDuration: 500,
   });
 
-  layouts.forEach((layout, i) => {
+  layouts.forEach(layout => {
     ctx.clearRect(
       borderStroke,
       borderStroke,
@@ -280,7 +280,7 @@ function drawEachCharFrame({ charObj, state }) {
 }
 
 //
-function drawFrameSync({ charPoints, charObj, state }) {
+export function drawFrameSync({ charPoints, charObj, state }) {
   const {
     ctx,
     rowsScrolled,
@@ -308,7 +308,7 @@ function drawFrameSync({ charPoints, charObj, state }) {
   });
 }
 
-function drawScrollWordsSync({ state }) {
+export function drawScrollWordsSync({ state }) {
   const {
     ctx,
     config: { borderStroke, borderThickness },
@@ -327,7 +327,7 @@ function drawScrollWordsSync({ state }) {
   }
 }
 
-function drawScrollFrameSync({ state, scrollFrameIndex }) {
+export function drawScrollFrameSync({ state, scrollFrameIndex }) {
   const { words } = state;
   for (let word of words) {
     for (let charObj of word.chars) {
@@ -337,11 +337,3 @@ function drawScrollFrameSync({ state, scrollFrameIndex }) {
     }
   }
 }
-
-module.exports = {
-  syncDrawWords,
-  drawFrameSync,
-  clearFrame,
-  drawScrollWordsSync,
-  drawScrollFrameSync,
-};

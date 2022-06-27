@@ -30,7 +30,7 @@ const checkAll = (...args) =>
     checkBlinkFlag,
   )(...args);
 
-function getFlags(fullWordText) {
+export function getFlags(fullWordText) {
   return getAllFlags([fullWordText, defaultFlags]);
 }
 
@@ -57,7 +57,3 @@ function makeCheckFlag(pattern, flagName) {
 function compose(...functions) {
   return (...args) => functions.reduceRight((acc, fn) => fn(acc), ...args);
 }
-
-module.exports = {
-  getFlags,
-};

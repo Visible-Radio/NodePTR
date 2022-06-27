@@ -1,6 +1,5 @@
-const { drawScrollWords } = require('./asyncDrawingFunctions.js');
-const { getFlags } = require('./getFlags.js');
-const { drawScrollWordsSync } = require('./syncDrawingFunctions.js');
+import { getFlags } from './getFlags.js';
+import { drawScrollWordsSync } from './syncDrawingFunctions.js';
 
 function breakWord(word, columns, broken = []) {
   // recursively break down a word that is too long
@@ -26,7 +25,7 @@ function parseWords(text, columns) {
   }, []);
 }
 
-function makeWords(text, columns, defs) {
+export function makeWords(text, columns, defs) {
   // break the string into words, none of which are longer than the number of columns
   const parsedWords = parseWords(text.toUpperCase(), columns);
 
@@ -90,7 +89,7 @@ function makeWords(text, columns, defs) {
   );
 }
 
-function makeChars({
+export function makeChars({
   segment,
   segmentIndex,
   word,
@@ -158,7 +157,7 @@ function makeChars({
 }
 
 // this works on the def array - what if we wrote a function that works on x,y points
-function applyHighlightTransform(def, charObj) {
+export function applyHighlightTransform(def, charObj) {
   if (!charObj.flags.highlightFlag) return def;
   const { charWidth } = charObj;
   let full = [];
@@ -168,7 +167,11 @@ function applyHighlightTransform(def, charObj) {
   return full;
 }
 
-function applyScrollTransformToDef({ scrollFrameIndex, charObj, state }) {
+export function applyScrollTransformToDef({
+  scrollFrameIndex,
+  charObj,
+  state,
+}) {
   const { gridSpaceY, scale } = state.config;
   const newDef = applyHighlightTransform(charObj.def, charObj).map(point => {
     const scrolledPoint =
@@ -182,7 +185,7 @@ function applyScrollTransformToDef({ scrollFrameIndex, charObj, state }) {
   return newDef;
 }
 
-function gridPositionFromIndex({ index, columns, char }) {
+export function gridPositionFromIndex({ index, columns }) {
   if (index >= 0) {
     const row = Math.floor(index / columns);
     const col = index % columns;
@@ -203,7 +206,7 @@ function gridPositionFromIndex({ index, columns, char }) {
   }
 }
 
-function getFrameState(frameNum, charObj) {
+export function getFrameState(frameNum, charObj) {
   // based one the frame num, apply a transformation to the def
   // and return it as a new array
   // this will be what gets drawn to the canvas for that character frame
@@ -235,43 +238,7 @@ function getFrameState(frameNum, charObj) {
   return points;
 }
 
-function makeStateAsync({ words, ctx, config }) {
-  let borderColor = [200, 0, 120];
-  let color = [0, 190, 187];
-  let rowsScrolled = 0;
-  function rgbToString(rgbArr) {
-    const [r, g, b] = rgbArr;
-    return `rgb(${r},${g},${b})`;
-  }
-
-  const state = {
-    ctx,
-    words,
-    config,
-    color,
-    getColor() {
-      return rgbToString(color);
-    },
-    getBorderColor() {
-      return rgbToString(borderColor);
-    },
-    newColor() {
-      return generateRandomColors();
-    },
-    rowsScrolled() {
-      return rowsScrolled;
-    },
-    async scroll({ charObj }) {
-      // grab all the words with rows < charObj.row
-      // we'll need to re-draw these
-      const scrollTheseWords = words.filter(word => word.row < charObj.row);
-      await drawScrollWords({ state: { ...this, words: scrollTheseWords } });
-      rowsScrolled += 1;
-    },
-  };
-  return state;
-}
-function makeStateSync({ words, ctx, config }) {
+export function makeStateSync({ words, ctx, config }) {
   let borderColor = [200, 0, 120];
   let color = [0, 190, 187];
   let rowsScrolled = 0;
@@ -335,7 +302,7 @@ function generateRandomColors() {
   return color;
 }
 
-function setupCanvas({
+export function setupCanvas({
   canvas,
   totalRows,
   columns,
@@ -386,15 +353,7 @@ function setupCanvas({
   };
 }
 
-function makeCanvas() {
-  const root = document.getElementById('root');
-  const canvas = document.createElement('canvas');
-  canvas.style.margin = '3px';
-  root.appendChild(canvas);
-  return canvas;
-}
-
-function drawBorder(state) {
+export function drawBorder(state) {
   const { ctx } = state;
   const borderStroke = state.config.borderStroke;
   ctx.strokeStyle = state.getBorderColor();
@@ -411,7 +370,7 @@ function drawBorder(state) {
   ctx.stroke();
 }
 
-function modifyDefs(defs) {
+export function modifyDefs(defs) {
   return Object.fromEntries(
     Object.entries(defs).map(([key, value]) => {
       if (key === 'charWidth') {
@@ -422,7 +381,7 @@ function modifyDefs(defs) {
         // since we have a border in which no square contains part of the character
         return [
           key,
-          value.map((pointIndex, i) => {
+          value.map(pointIndex => {
             // for each row in the new grid, add 1 to the point Indexes in that row
             return (pointIndex +=
               2 * Math.floor(pointIndex / defs.charWidth) +
@@ -436,7 +395,7 @@ function modifyDefs(defs) {
   );
 }
 
-function calculateTotalFrames(state) {
+export function calculateTotalFrames(state) {
   const {
     totalRows,
     displayRows,
@@ -457,19 +416,3 @@ function calculateTotalFrames(state) {
     totalFrames: numberOfScrollFrames + numberOfCharFrames + 1,
   };
 }
-
-module.exports = {
-  drawBorder,
-  modifyDefs,
-  calculateTotalFrames,
-  makeCanvas,
-  setupCanvas,
-  makeStateAsync,
-  makeStateSync,
-  makeWords,
-  makeChars,
-  gridPositionFromIndex,
-  applyScrollTransformToDef,
-  applyHighlightTransform,
-  getFrameState,
-};

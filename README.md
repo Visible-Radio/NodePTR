@@ -1,70 +1,50 @@
-# Getting Started with Create React App
+# Node Pixel Text Renderer
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+![The sky above the port was the color of television tuned to a dead channel](https://github.com/Visible-Radio/NodePTR/blob/30d7c7ccd7c984f973dc2b8d77af34d5d02af21f/PTR/PTR_output/neuromancer_pg_1.gif)
 
-## Available Scripts
+## Overview
 
-In the project directory, you can run:
+A Node.js utility for generating animated gifs, inspired from scrolling text used as context titles in film.
+In the 80s and 90s you'd often see this text rendered with a kind of typing effect - as though it were being typed into a console, printed on a teletype, or recieved character by character via some transmission.
 
-### `npm start`
+NodePTR accepts a sequence of text and writes an animated gif based on it. A simple markup syntax can be used to blink or highlight individual words, or to trigger a screen distortion effect at a specific frame.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+## Usage
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+```javascript
+import { nptr } from '../../nodeTextRenderer.js';
 
-### `npm test`
+nptr("myGif",
+  {
+    text: "Hello World",
+    columns: 10,
+    displayRows 5,
+    scale: 5
+  })
+```
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## CLI
 
-### `npm run build`
+The project includes a wrapper around `nptr` for usage on the command line.
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+```shell
+node nptrCLI <fileName> <text> <columns> <rows> <scale>
+```
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+## Markup
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+The text argument supports three flags applied to individual words: `<HL>`, `<BL>`, and `<WS>`, which stand for 'highlight', 'blink', and 'wipe screen'.
 
-### `npm run eject`
+The flags can be combined together, must proceed the word to which they apply, and do not have closing tags like HTML/XML.
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+`'<BL><HL>Projection\n if <HL>intruder <HL>organism reaches civilized areas\n <BL>...Entire world population infected <HL>27,000 hours from first <WS>contact. Data Stream Broken'`
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+## Example Output
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+This text appears onscreen in the the movie 'The Thing'
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+![<BL><HL>Projection\n if <HL>intruder <HL>organism reaches civilized areas\n <BL>...Entire world population infected <HL>27,000 hours from first <WS>contact. Data Stream Broken](https://github.com/Visible-Radio/NodePTR/blob/245168c4312791a29da8313d016e1490453276a2/PTR/PTR_output/the_thing_with_glitch.gif)
 
-## Learn More
+## Font
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+Internally, NPTR consumes character definition json generated with the [Node Pixel Character Editor](https://visible-radio.github.io/react-pixel-character-editor/). It will write any char sets defined with that tool, but is currently hardcoded to a specific definition set.

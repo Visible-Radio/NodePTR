@@ -10,21 +10,14 @@ const fromTheThingGlitchy =
 const fromNeuroMancer =
   'the sky above the port was the color of television tuned to a <HL>dead <WS>channel \n \n \n <HL>Neuromancer';
 
-const defaultColumns = 10;
-
-const defaultRows = 5;
-
-const defaultScale = 5;
-
-const WSTest = 'hello <WS>world error';
-
-const defaultText = fromNeuroMancer;
-
-module.exports = {
-  defaultText,
+export const text = {
   fromDoom,
   fromTheThing,
-  defaultColumns,
-  defaultRows,
-  defaultScale,
+  fromTheThingGlitchy,
+  fromNeuroMancer,
 };
+export const defaultColumns = 10;
+export const defaultRows = 5;
+export const defaultScale = 1;
+export const WSTest = 'hello <WS>world error';
+export const defaultText = fromNeuroMancer;
