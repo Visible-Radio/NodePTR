@@ -7,7 +7,7 @@
 A Node.js utility for generating animated gifs, inspired from scrolling text used as context titles in film.
 In the 80s and 90s you'd often see this text rendered with a kind of typing effect - as though it were being typed into a console, printed on a teletype, or recieved character by character via some transmission.
 
-NodePTR accepts a sequence of text and writes an animated gif based on it. A simple markup syntax can be used to blink or highlight individual words, or the trigger a screen distortion effect at a specific frame.
+NodePTR accepts a sequence of text and writes an animated gif based on it. A simple markup syntax can be used to blink or highlight individual words, or to trigger a screen distortion effect at a specific frame.
 
 ## Usage
 
