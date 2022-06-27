@@ -14,13 +14,12 @@ NodePTR accepts a sequence of text and writes an animated gif based on it. A sim
 ```javascript
 import { nptr } from '../../nodeTextRenderer.js';
 
-nptr("myGif",
-  {
-    text: "Hello World",
-    columns: 10,
-    displayRows 5,
-    scale: 5
-  })
+nptr('myGif', {
+  text: 'Hello World',
+  columns: 10,
+  displayRows: 5,
+  scale: 5,
+});
 ```
 
 ## CLI
