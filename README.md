@@ -46,4 +46,4 @@ This text appears onscreen in the the movie 'The Thing'
 
 ## Font
 
-Internally, NPTR consumes character definition json generated with the [Node Pixel Character Editor](https://visible-radio.github.io/react-pixel-character-editor/). It will write any char sets defined with that tool, but is currently hardcoded to a specific definition set.
+Internally, NPTR consumes character definition json generated with the [React Pixel Character Editor](https://visible-radio.github.io/react-pixel-character-editor/). It will write any char sets defined with that tool, but is currently hardcoded to a specific definition set.
