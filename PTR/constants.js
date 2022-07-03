@@ -10,6 +10,9 @@ const fromTheThingGlitchy =
 const fromNeuroMancer =
   'the sky above the port was the color of television tuned to a <HL>dead <WS>channel \n \n \n <HL>Neuromancer';
 
+const fromNeuroMancerShort =
+  'the sky above the port was the color of television tuned to a <HL>dead channel';
+
 export const text = {
   fromDoom,
   fromTheThing,
@@ -18,6 +21,6 @@ export const text = {
 };
 export const defaultColumns = 10;
 export const defaultRows = 5;
-export const defaultScale = 1;
+export const defaultScale = 5;
 export const WSTest = 'hello <WS>world error';
-export const defaultText = fromNeuroMancer;
+export const defaultText = fromTheThingGlitchy;

@@ -20,14 +20,17 @@ if (!fileName) {
   console.log('You must provide a file name for the gif');
   process.exit(1);
 }
-if (/[^A-Za-z0-9_-]/.test(fileName)) {
+if (/[^/A-Za-z0-9_-]/.test(fileName)) {
   console.log(
     'Permitted characters must follow format [A-Za-z0-9_-].\nDo not provide an extension.',
   );
   process.exit(1);
 }
-if (!fs.existsSync('PTR_output')) {
-  fs.mkdirSync('PTR_output');
+
+const path = fileName.split('/').slice(0, -1);
+
+if (path.length && !fs.existsSync(path.join('/'))) {
+  fs.mkdirSync(path.join('/'), { recursive: true });
 }
 
 run(

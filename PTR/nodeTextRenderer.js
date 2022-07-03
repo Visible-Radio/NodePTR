@@ -71,7 +71,7 @@ export function initGIFEncoder(ctx, fileName) {
   encoder.start();
   encoder.setRepeat(0); // 0 for repeat, -1 for no-repeat
   encoder.setDelay(20); // frame delay in ms
-  encoder.setQuality(5);
+  encoder.setQuality(30);
   return encoder;
 }
 
