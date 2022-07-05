@@ -1,4 +1,5 @@
 import { getFlags } from './getFlags.js';
+import { gridPositionFromIndex } from './gridPositionFromIndex.js';
 import { drawScrollWordsSync } from './syncDrawingFunctions.js';
 
 function breakWord(word, columns, broken = []) {
@@ -183,27 +184,6 @@ export function applyScrollTransformToDef({
     });
   });
   return newDef;
-}
-
-export function gridPositionFromIndex({ index, columns }) {
-  if (index >= 0) {
-    const row = Math.floor(index / columns);
-    const col = index % columns;
-    return {
-      col,
-      row,
-    };
-  }
-  if (index < 0) {
-    const row = Math.floor(index / columns);
-    const col =
-      index % columns === 0 ? index % columns : (index % columns) + columns;
-
-    return {
-      col,
-      row,
-    };
-  }
 }
 
 export function getFrameState(frameNum, charObj) {

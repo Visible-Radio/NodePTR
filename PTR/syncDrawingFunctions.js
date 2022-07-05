@@ -1,26 +1,38 @@
+import { gridPositionFromIndex } from './gridPositionFromIndex.js';
+
 export function clearFrame({ charPoints, charObj, state }) {
-  const {
-    ctx,
-    config: { scale, charWidth, gridSpaceX, gridSpaceY, borderThickness },
-    rowsScrolled,
-  } = state;
+  const { ctx } = state;
   charPoints.forEach(({ row: charPointY, col: charPointX }) => {
-    const rowGap = (charObj.row - rowsScrolled()) * gridSpaceY;
-    const colGap = charObj.col * gridSpaceX;
-    const pxX =
-      charObj.col * scale * charWidth +
-      charPointX * scale +
-      colGap +
-      borderThickness;
-    const pxY =
-      (charObj.row - rowsScrolled()) * scale * charWidth +
-      charPointY * scale +
-      rowGap +
-      borderThickness;
-    const pxSizeX = scale;
-    const pxSizeY = scale;
+    const { pxX, pxY, pxSizeX, pxSizeY } = charPtToCanvasPt({
+      charPointX,
+      charPointY,
+      charObj,
+      state,
+    });
     ctx.clearRect(pxX, pxY, pxSizeX, pxSizeY);
   });
+}
+
+function charPtToCanvasPt({ charPointX, charPointY, charObj, state }) {
+  const { gridSpaceX, gridSpaceY, scale, charWidth, borderThickness } =
+    state.config;
+  const { rowsScrolled } = state;
+  const rowGap = (charObj.row - rowsScrolled()) * gridSpaceY;
+  const colGap = charObj.col * gridSpaceX;
+  const pxY =
+    (charObj.row - rowsScrolled()) * scale * charWidth +
+    charPointY * scale +
+    rowGap +
+    borderThickness;
+  const pxX =
+    charObj.col * scale * charWidth +
+    charPointX * scale +
+    colGap +
+    borderThickness;
+  const pxSizeX = scale;
+  const pxSizeY = scale;
+
+  return { pxX, pxY, pxSizeX, pxSizeY };
 }
 
 export function syncDrawWords({ state }) {
@@ -66,28 +78,15 @@ function getOnScreenChars({ word, state }) {
 }
 
 function getCharAbsoluteScreenLayout({ charObj, state }) {
-  const {
-    rowsScrolled,
-    config: { scale, charWidth, borderThickness, gridSpaceX, gridSpaceY },
-  } = state;
   return charObj
     .frameState()
     .reduce((acc, { row: charPointY, col: charPointX }) => {
-      const rowGap = (charObj.row - rowsScrolled()) * gridSpaceY;
-      const colGap = charObj.col * gridSpaceX;
-      const pxX =
-        charObj.col * scale * charWidth +
-        charPointX * scale +
-        colGap +
-        borderThickness;
-      const pxY =
-        (charObj.row - rowsScrolled()) * scale * charWidth +
-        charPointY * scale +
-        rowGap +
-        borderThickness;
-
-      const pxSizeX = scale;
-      const pxSizeY = scale;
+      const { pxX, pxY, pxSizeX, pxSizeY } = charPtToCanvasPt({
+        charPointX,
+        charPointY,
+        charObj,
+        state,
+      });
       return [...acc, { pxX, pxY, pxSizeX, pxSizeY }];
     }, []);
 }
@@ -114,27 +113,6 @@ function ptWidthTxFn({ pt, targetWidth, state }) {
     columns: targetWidth,
   });
   return { ...pt, pxX, pxY };
-}
-
-function gridPositionFromIndex({ index, columns }) {
-  if (index >= 0) {
-    const row = Math.floor(index / columns);
-    const col = index % columns;
-    return {
-      col,
-      row,
-    };
-  }
-  if (index < 0) {
-    const row = Math.floor(index / columns);
-    const col =
-      index % columns === 0 ? index % columns : (index % columns) + columns;
-
-    return {
-      col,
-      row,
-    };
-  }
 }
 
 function drawWipeScreen({ word, state }) {
@@ -283,26 +261,16 @@ function drawEachCharFrame({ charObj, state }) {
 export function drawFrameSync({ charPoints, charObj, state }) {
   const {
     ctx,
-    rowsScrolled,
-    config: { scale, charWidth, gridSpaceX, gridSpaceY, borderThickness },
+    config: { scale },
   } = state;
   charPoints.forEach(({ row: charPointY, col: charPointX }) => {
-    const rowGap = (charObj.row - rowsScrolled()) * gridSpaceY;
-    const colGap = charObj.col * gridSpaceX;
-    const pxY =
-      (charObj.row - rowsScrolled()) * scale * charWidth +
-      charPointY * scale +
-      rowGap +
-      borderThickness;
+    const { pxX, pxY, pxSizeX, pxSizeY } = charPtToCanvasPt({
+      charPointX,
+      charPointY,
+      charObj,
+      state,
+    });
     if ([0, scale].includes(pxY)) return;
-    const pxX =
-      charObj.col * scale * charWidth +
-      charPointX * scale +
-      colGap +
-      borderThickness;
-    const pxSizeX = scale;
-    const pxSizeY = scale;
-
     ctx.fillStyle = state.getColor();
     ctx.fillRect(pxX, pxY, pxSizeX, pxSizeY);
   });
