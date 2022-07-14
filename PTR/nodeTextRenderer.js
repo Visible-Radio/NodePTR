@@ -89,9 +89,13 @@ export async function run(fileName, state, initFn) {
   });
   const buf = onCompleteFn();
   await writeFile(`${fileName}.gif`, buf);
-  execFile(gifsicle, ['-o', `${fileName}.gif`, `${fileName}.gif`], error => {
-    console.log('Image minified!');
-  });
+  execFile(
+    gifsicle,
+    ['-i', '--colors', '16', '-o', `${fileName}.gif`, `${fileName}.gif`],
+    error => {
+      console.log('Image minified!');
+    },
+  );
 }
 
 export function prepareModel({ columns, scale, text, defs, displayRows }) {
