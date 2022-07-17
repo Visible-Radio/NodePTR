@@ -376,23 +376,89 @@ export function modifyDefs(defs) {
 }
 
 export function calculateTotalFrames(state) {
+  // blink frames
+  // each blink adds 4 frames (dim, off, dim on)
+  // looks like each blink flag causes 6 blinks
+  // 24 frames per <BL>
+  // ws frames
+  // each <WS> consists of 78 frames.
+  // These values are baked into the code for the respective
+  // drawing functions for the time being.
+
+  // <WS> may complicate the way we calculate scroll frames
+
+  // so we need totals for all the flags
+  const { words } = state;
+
+  const totals = words.reduce(
+    (acc, w) => {
+      for (const [flag, bool] of Object.entries(w.word.flags)) {
+        if (bool) {
+          acc[flag].count += 1;
+          acc[flag].instances.push(w.chars.slice(-1)[0]);
+        }
+      }
+      return acc;
+    },
+    {
+      highlightFlag: { count: 0, instances: [] },
+      wipeScreenFlag: { count: 0, instances: [] },
+      blinkFlag: { count: 0, instances: [] },
+    },
+  );
+
   const {
     totalRows,
     displayRows,
     charWidth,
     charCount: numberOfChars,
   } = state.config;
-  const numberOfScrollEvents =
-    totalRows - displayRows > -1 ? totalRows - displayRows : 0;
+
+  let numberOfScrollEvents =
+    totalRows - displayRows > -1 ? totalRows - displayRows : 0; // <WS> messes with this
+
+  // It clears the screen afterwards, and text begins to be witten at the top of the screen
+  // if chars are 7 wide, augmented to 9, plus 2 for a space above and below
+  // a single scroll event is responsible for 11 frames
+
+  // so after a <WS> we have less scroll frames, in proportion
+  // to the number of rows written to the freshly cleared screen
+  // to a maximum of displayRows * (chrWidth + 2)
+
+  // what display row were we in when the <WS> was triggered?
+  // if it's the last row of the display
+  // we need to deduct up to total displayRows worth of scroll events
+  // or, the number of rows written to the cleared screen
+
+  // for each WS, get the number of rows that occur after it
+  // deduct that number or total displayRows from numberOfScrollEvents,
+  // whichever is smaller
+  // totalRows - <WS>row = rows after <WS>
+  // Number of Scroll Events - math.min(rowsAfterWS, displayRows)
+  totals.wipeScreenFlag.instances.forEach(lastChar => {
+    const rowsAfterWS = totalRows - lastChar.row;
+    console.log(rowsAfterWS);
+    numberOfScrollEvents -= Math.min(rowsAfterWS - 1, displayRows);
+  });
+
   const numberOfScrollFrames = (charWidth + 2) * numberOfScrollEvents;
   const numberOfCharFrames = charWidth * numberOfChars;
+  const numberOfWipeScreenFrames = totals.wipeScreenFlag.count * 78;
+  const numberOfBlinkFrames = totals.blinkFlag.count * 24;
   return {
     totalRows,
     displayRows,
     numberOfScrollEvents,
     numberOfScrollFrames,
     numberOfCharFrames,
+    numberOfWipeScreenFrames,
+    numberOfBlinkFrames,
     numberOfChars,
-    totalFrames: numberOfScrollFrames + numberOfCharFrames + 1,
+    totalFrames:
+      numberOfBlinkFrames +
+      numberOfWipeScreenFrames +
+      numberOfScrollFrames +
+      numberOfCharFrames +
+      1,
   };
 }
