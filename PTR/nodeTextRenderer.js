@@ -61,7 +61,7 @@ export function GIFEncoderFrameCapture(ctx, frameMetrics, fileName) {
       }
     },
     () => {
-      const doneMessage = `\nDone! Wrote ${frameSnapShotCounter} frames`;
+      const doneMessage = `\nDone! Wrote ${frameSnapShotCounter} frames\n`;
       process.stdout.write(doneMessage);
       encoder.finish();
       return encoder.out.getData();
@@ -89,13 +89,24 @@ export async function run(fileName, state, initFn) {
   });
   const buf = onCompleteFn();
   await writeFile(`${fileName}.gif`, buf);
-  execFile(
-    gifsicle,
-    ['-i', '--colors', '16', '-o', `${fileName}.gif`, `${fileName}.gif`],
-    error => {
-      console.log('Image minified!');
-    },
-  );
+  await minify(fileName);
+}
+
+async function minify(fileName) {
+  return new Promise((res, rej) => {
+    execFile(
+      gifsicle,
+      ['-i', '--colors', '16', '-o', `${fileName}.gif`, `${fileName}.gif`],
+      error => {
+        if (!error) {
+          process.stdout.write(`\nMinified ${fileName}.gif`);
+          res();
+        } else {
+          rej(error);
+        }
+      },
+    );
+  });
 }
 
 export function prepareModel({ columns, scale, text, defs, displayRows }) {

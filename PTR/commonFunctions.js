@@ -414,7 +414,7 @@ export function calculateTotalFrames(state) {
     charCount: numberOfChars,
   } = state.config;
 
-  let numberOfScrollEvents =
+  const numberOfScrollEvents =
     totalRows - displayRows > -1 ? totalRows - displayRows : 0; // <WS> messes with this
 
   // It clears the screen afterwards, and text begins to be witten at the top of the screen
@@ -435,20 +435,27 @@ export function calculateTotalFrames(state) {
   // whichever is smaller
   // totalRows - <WS>row = rows after <WS>
   // Number of Scroll Events - math.min(rowsAfterWS, displayRows)
-  totals.wipeScreenFlag.instances.forEach(lastChar => {
-    const rowsAfterWS = totalRows - lastChar.row;
-    console.log(rowsAfterWS);
-    numberOfScrollEvents -= Math.min(rowsAfterWS - 1, displayRows);
-  });
+  // totals.wipeScreenFlag.instances.forEach(lastChar => {
+  //   const rowsAfterWS = totalRows - lastChar.row;
+  //   numberOfScrollEvents -= Math.min(rowsAfterWS - 1, displayRows);
+  // });
 
-  const numberOfScrollFrames = (charWidth + 2) * numberOfScrollEvents;
+  const adjustedNumberOfScrollEvents = totals.wipeScreenFlag.instances.reduce(
+    (acc, lastChar) => {
+      const rowsAfterWS = totalRows - lastChar.row;
+      return acc - Math.min(rowsAfterWS - 1, displayRows);
+    },
+    numberOfScrollEvents,
+  );
+
+  const numberOfScrollFrames = (charWidth + 2) * adjustedNumberOfScrollEvents;
   const numberOfCharFrames = charWidth * numberOfChars;
   const numberOfWipeScreenFrames = totals.wipeScreenFlag.count * 78;
   const numberOfBlinkFrames = totals.blinkFlag.count * 24;
   return {
     totalRows,
     displayRows,
-    numberOfScrollEvents,
+    numberOfScrollEvents: adjustedNumberOfScrollEvents,
     numberOfScrollFrames,
     numberOfCharFrames,
     numberOfWipeScreenFrames,
