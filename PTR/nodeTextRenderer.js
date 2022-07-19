@@ -1,4 +1,4 @@
-import fs from 'fs';
+import { writeFile } from 'node:fs/promises';
 import readline from 'readline';
 import GIFEncoder from 'gifencoder';
 import canvasExport from 'canvas';
@@ -21,10 +21,13 @@ import {
 
 import defs from './CHARDEFS/customDefs_charWidth_7.js';
 
+import { execFile } from 'node:child_process';
+import gifsicle from 'gifsicle';
+
 const { createCanvas } = canvasExport;
 
-export const nptr = (fileName, { text, columns, displayRows, scale }) =>
-  run(
+export const nptr = async (fileName, { text, columns, displayRows, scale }) =>
+  await run(
     fileName,
     prepareModel({
       text: text ?? defaultText,
@@ -58,16 +61,16 @@ export function GIFEncoderFrameCapture(ctx, frameMetrics, fileName) {
       }
     },
     () => {
-      const doneMessage = `\nDone! Wrote ${frameSnapShotCounter} frames`;
+      const doneMessage = `\nDone! Wrote ${frameSnapShotCounter} frames\n`;
       process.stdout.write(doneMessage);
       encoder.finish();
+      return encoder.out.getData();
     },
   ];
 }
 
-export function initGIFEncoder(ctx, fileName) {
+export function initGIFEncoder(ctx) {
   const encoder = new GIFEncoder(ctx.canvas.width, ctx.canvas.height);
-  encoder.createReadStream().pipe(fs.createWriteStream(`${fileName}.gif`));
   encoder.start();
   encoder.setRepeat(0); // 0 for repeat, -1 for no-repeat
   encoder.setDelay(20); // frame delay in ms
@@ -75,7 +78,7 @@ export function initGIFEncoder(ctx, fileName) {
   return encoder;
 }
 
-export function run(fileName, state, initFn) {
+export async function run(fileName, state, initFn) {
   const { ctx } = state;
   const frameMetrics = calculateTotalFrames(state);
   const [snapshotFn, onCompleteFn] = initFn(ctx, frameMetrics, fileName);
@@ -84,7 +87,26 @@ export function run(fileName, state, initFn) {
   syncDrawWords({
     state,
   });
-  onCompleteFn();
+  const buf = onCompleteFn();
+  await writeFile(`${fileName}.gif`, buf);
+  await minify(fileName);
+}
+
+async function minify(fileName) {
+  return new Promise((res, rej) => {
+    execFile(
+      gifsicle,
+      ['-i', '--colors', '16', '-o', `${fileName}.gif`, `${fileName}.gif`],
+      error => {
+        if (!error) {
+          process.stdout.write(`\nMinified ${fileName}.gif`);
+          res();
+        } else {
+          rej(error);
+        }
+      },
+    );
+  });
 }
 
 export function prepareModel({ columns, scale, text, defs, displayRows }) {

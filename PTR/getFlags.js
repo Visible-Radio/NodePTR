@@ -17,7 +17,7 @@ blink and highlight can appear on their own or in combindation, in whatever orde
 const defaultFlags = {
   highlightFlag: false,
   blinkFlag: false,
-  wipseScreenFlag: false,
+  wipeScreenFlag: false,
 };
 const checkBlinkFlag = makeCheckFlag(/^<BL>/, 'blinkFlag');
 const checkHighlightFlag = makeCheckFlag(/^<HL>/, 'highlightFlag');
