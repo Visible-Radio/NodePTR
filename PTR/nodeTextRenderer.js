@@ -96,7 +96,15 @@ async function minify(fileName) {
   return new Promise((res, rej) => {
     execFile(
       gifsicle,
-      ['-i', '--colors', '16', '-o', `${fileName}.gif`, `${fileName}.gif`],
+      [
+        '-i',
+        '-O3',
+        '--colors',
+        '16',
+        '-o',
+        `${fileName}.gif`,
+        `${fileName}.gif`,
+      ],
       error => {
         if (!error) {
           process.stdout.write(`\nMinified ${fileName}.gif`);
